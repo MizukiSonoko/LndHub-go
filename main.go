@@ -19,6 +19,7 @@ type IndInfo struct {
 
 type Lnd interface {
 	GetInfo() (IndInfo, error)
+	ConnectPeer(publicKey, host string) error
 }
 
 type lndClient struct {
@@ -36,6 +37,19 @@ func (l *lndClient) GetInfo() (IndInfo, error) {
 		res.IdentityAddress,
 		res.IdentityPubkey,
 	}, nil
+}
+
+func (l *lndClient) ConnectPeer(publicKey, host string) error {
+	_, err := l.client.ConnectPeer(l.c, &lnrpc.ConnectPeerRequest{
+		Addr: &lnrpc.LightningAddress{
+			PubKeyHash: publicKey,
+			Host:       host,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("grpc error err:%s", err)
+	}
+	return nil
 }
 
 func getClient(address, tlsPath string) *grpc.ClientConn {
