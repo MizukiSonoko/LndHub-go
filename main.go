@@ -3,19 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/database"
-	_ "github.com/btcsuite/btcd/database/ffldb"
-	"os"
-	"encoding/hex"
-
-
+	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-
-	"github.com/btcsuite/btcd/blockchain"
+	"log"
+	"os"
 )
 
 // ToDo: make constructor func and hide member because we should not change it.
@@ -82,50 +75,27 @@ func getClient(address, tlsPath string) *grpc.ClientConn {
 	return conn
 }
 
+// Ref: https://github.com/btcsuite/btcd/blob/86fed781132ac890ee03e906e4ecd5d6fa180c64/rpcclient/examples/bitcoincorehttp/main.go
 func getBlockchainInfo(){
-
-	dbPath := "/Users/mizuki/Library/Application Support/Btcd/data/simnet/blocks_ffldb"
-	_ = os.RemoveAll(dbPath)
-	db, err := database.Create("ffldb", dbPath, chaincfg.MainNetParams.Net)
+	connCfg := &rpcclient.ConnConfig{
+		Host:         "localhost:18555",
+		User:         "sonokko",
+		Pass:         "1qazxsw23edcvfr4",
+		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
+		DisableTLS:   true, // Bitcoin core does not provide TLS by default
+	}
+	client, err := rpcclient.New(connCfg, nil)
 	if err != nil {
-		fmt.Printf("Failed to create database: %v\n", err)
-		return
+		panic(err)
 	}
-	defer os.RemoveAll(dbPath)
-	defer db.Close()
+	defer client.Shutdown()
 
-	chain, err := blockchain.New(&blockchain.Config{
-		DB:          db,
-		ChainParams: &chaincfg.MainNetParams,
-		TimeSource:  blockchain.NewMedianTime(),
-	})
-	if err != nil{
-		panic(chain)
-	}
-
-	hashStr := "683e86bd5c6d110d91b94b97137ba6bfe02dbbdb8e3dff722a669b5d69d77af6"
-	hash, err := hex.DecodeString(hashStr)
-	if err != nil{
+	blockCount, err := client.GetBlockCount()
+	if err != nil {
 		panic(err)
 	}
-	h := new(chainhash.Hash)
-	err =h.SetBytes(hash)
-	if err != nil{
-		panic(err)
-	}
-	res, err := chain.HaveBlock(h)
-	if err != nil{
-		panic(err)
-	}
-	print(res)
-
-	head, err := chain.BlockHashByHeight(0)
-	if err != nil{
-		panic(err)
-	}
-	fmt.Printf("head:%s\n", head.String())
+	log.Printf("Block count: %d", blockCount)
 }
-
 
 func newLnd(address, certPath string) Lnd {
 	return &lndClient{
