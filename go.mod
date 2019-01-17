@@ -2,7 +2,7 @@ module github.com/MizukiSonoko/lnd-gateway
 
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
-	github.com/btcsuite/btcd v0.0.0-20181130015935-7d2daa5bfef2 // indirect
+	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/btcsuite/fastsha256 v0.0.0-20160815193821-637e65642941 // indirect
 	github.com/btcsuite/go-flags v0.0.0-20150116065318-6c288d648c1c // indirect
 	github.com/codahale/chacha20 v0.0.0-20151107025005-ec07b4f69a3f // indirect
