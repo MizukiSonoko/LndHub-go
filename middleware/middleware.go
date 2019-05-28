@@ -13,6 +13,7 @@ import (
 
 //ToDo make it injectable using env
 const PUBLIC_KEY_PATH = ""
+
 var publicKey *rsa.PublicKey
 
 func init() {
@@ -29,7 +30,7 @@ func init() {
 func WithJWT(base http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		Header := r.Header.Get("Authorization")
-		spd  := strings.SplitN(Header, " ", 2)
+		spd := strings.SplitN(Header, " ", 2)
 		if len(spd) != 2 || spd[0] != "Bearer" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -48,7 +49,7 @@ func WithJWT(base http.Handler) http.Handler {
 		}
 		claims := token.Claims.(jwt.MapClaims)
 		userId, ok := claims["userId"].(string)
-		if !ok{
+		if !ok {
 			log.Println("request not set userId")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
