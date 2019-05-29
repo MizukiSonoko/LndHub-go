@@ -8,10 +8,11 @@ import (
 	"syscall"
 
 	"github.com/MizukiSonoko/lnd-gateway/controller"
+	"github.com/MizukiSonoko/lnd-gateway/middleware"
 )
 
 func main() {
-	log.Printf("start BlueWallet-go implements")
+	log.Printf("start LndHub-go implements")
 	errC := make(chan error)
 	go func() {
 		rootHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -20,13 +21,19 @@ func main() {
 		}
 		http.HandleFunc("/", rootHandler)
 		for path, h := range controller.GetHandlerFuncs() {
-			http.HandleFunc(path, h)
+			h := http.HandlerFunc(h)
+			// ToDo: umm too bad
+			if path != "/login"{
+				http.Handle(path, middleware.WithJWT(h))
+			}else{
+				http.Handle(path, h)
+			}
 		}
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			errC <- err
 		}
 	}()
-g
+
 	quitC := make(chan os.Signal)
 	signal.Notify(quitC, syscall.SIGINT, syscall.SIGTERM)
 
