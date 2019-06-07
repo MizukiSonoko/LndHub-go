@@ -11,7 +11,6 @@ import (
 	"github.com/MizukiSonoko/lnd-gateway/entity"
 	"github.com/MizukiSonoko/lnd-gateway/lightning"
 	"github.com/MizukiSonoko/lnd-gateway/repository"
-	"github.com/MizukiSonoko/lnd-gateway/service"
 )
 
 var (
@@ -22,6 +21,7 @@ var (
 
 func init() {
 	repo = repository.NewUserRepo()
+	// In now, using macOS
 	lnd = lightning.NewLnd(
 		"localhost:10009",
 		os.Getenv("HOME")+"/Library/Application Support/Lnd/tls.cert")
@@ -32,13 +32,9 @@ func init() {
 	identityPubkey = info.IdentityPubkey
 }
 
-func createUser(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func auth(w http.ResponseWriter, r *http.Request) {
-	pMemo := r.Form.Get("userId")
-	pAmount := r.Form.Get("password")
+	pUserId := r.Form.Get("userId")
+	pPassword := r.Form.Get("password")
 
 	amount, err := strconv.Atoi(pAmount)
 	if err != nil {
@@ -54,7 +50,7 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, _ := service.GenerateToken(nil)
+	token := middleware.GenerateToken(nil)
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(
 		TokenResp{Token: token})
