@@ -1,0 +1,27 @@
+/**
+ * Copyright (C) 2018 The Suigetsu Authors, Ltd. All rights reserved.
+ */
+syntax = "proto3";
+package api;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service LndHubService {
+    rpc GetInfo(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc CreateUser(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc Login(LoginReq) returns (LoginRes);
+}
+
+service LndHubPrivateService {
+    rpc GetInfo(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message LoginReq {
+    string user_id = 1;
+    string password = 2;
+}
+
+message LoginRes{
+    string token = 1;
+}
