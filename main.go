@@ -1,46 +1,42 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"context"
+	"github.com/MizukiSonoko/lnd-gateway/controller"
+	"github.com/MizukiSonoko/lnd-gateway/logger"
+	"github.com/MizukiSonoko/lnd-gateway/protobuf"
 	"os"
 	"os/signal"
 	"syscall"
+)
 
-	"github.com/MizukiSonoko/lnd-gateway/controller"
-	"github.com/MizukiSonoko/lnd-gateway/middleware"
+var (
+	log = logger.NewLogger()
 )
 
 func main() {
-	log.Printf("start LndHub-go implements")
+	log.Info("start LndHub-go server")
 	errC := make(chan error)
+
 	go func() {
-		rootHandler := func(w http.ResponseWriter, r *http.Request) {
-			log.Print("root directory is accessed and ignored")
-			w.WriteHeader(http.StatusNotFound)
-		}
-		http.HandleFunc("/", rootHandler)
-		for path, h := range controller.GetHandlerFuncs() {
-			h := http.HandlerFunc(h)
-			// ToDo: umm too bad
-			if path != "/login"{
-				http.Handle(path, middleware.WithJWT(h))
-			}else{
-				http.Handle(path, h)
-			}
-		}
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		ctx := context.Background()
+		s := controller.NewGRPCServer(ctx)
+
+		api.RegisterLndHubServiceServer(s.Server, controller.GetLndHubServiceServer())
+
+		api.RegisterLndHubPrivateServiceServer(s.Server, controller.GetLndHubPrivateServiceServer())
+
+		if err := s.Start(); err != nil {
 			errC <- err
 		}
 	}()
 
-	quitC := make(chan os.Signal)
+	quitC := make(chan os.Signal, 1)
 	signal.Notify(quitC, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
 	case err := <-errC:
 		panic(err)
 	case <-quitC:
-		log.Println("finish!")
+		log.Info("system shutdown")
 	}
 }
