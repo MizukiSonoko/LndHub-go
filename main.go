@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/MizukiSonoko/lnd-gateway/controller"
-	"github.com/MizukiSonoko/lnd-gateway/logger"
-	"github.com/MizukiSonoko/lnd-gateway/protobuf"
+	"github.com/MizukiSonoko/LndHub-go/controller"
+	"github.com/MizukiSonoko/LndHub-go/logger"
+	"github.com/MizukiSonoko/LndHub-go/protobuf"
+	"github.com/MizukiSonoko/LndHub-go/server"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,7 +21,7 @@ func main() {
 
 	go func() {
 		ctx := context.Background()
-		s := controller.NewGRPCServer(ctx)
+		s := server.NewGRPCServer(ctx)
 
 		api.RegisterLndHubServiceServer(s.Server, controller.GetLndHubServiceServer())
 
