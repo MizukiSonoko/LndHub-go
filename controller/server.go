@@ -3,17 +3,16 @@ package controller
 import (
 	"context"
 	"fmt"
-	"github.com/MizukiSonoko/lnd-gateway/interceptor"
-	"github.com/MizukiSonoko/lnd-gateway/logger"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"net"
+	"time"
+
+	"github.com/MizukiSonoko/LndHub-go/interceptor"
+	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
-	"net"
-	"time"
 )
 
 var (

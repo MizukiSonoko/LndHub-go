@@ -2,8 +2,11 @@ package controller
 
 import (
 	"context"
-	"github.com/MizukiSonoko/lnd-gateway/protobuf"
+	"encoding/json"
+	"github.com/MizukiSonoko/LndHub-go/protobuf"
 	"github.com/golang/protobuf/ptypes/empty"
+	"net/http"
+	"strconv"
 )
 
 type lndHubServiceServer struct{}
@@ -17,7 +20,27 @@ func (*lndHubServiceServer) CreateUser(ctx context.Context, e *empty.Empty) (*em
 }
 
 func (*lndHubServiceServer) Login(ctx context.Context, req *api.LoginReq) (*api.LoginRes, error) {
-	panic("implement me")
+	pUserId := r.Form.Get("userId")
+	pPassword := r.Form.Get("password")
+
+	amount, err := strconv.Atoi(pAmount)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(
+			ErrorResp{Message: "amount should be number"})
+		return
+	}
+	if amount < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(
+			ErrorResp{Message: "amount should be plus"})
+		return
+	}
+
+	token := middleware.GenerateToken(nil)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(
+		TokenResp{Token: token})
 }
 
 func (*lndHubServiceServer) Authorize(ctx context.Context, fullMethodName string) error {

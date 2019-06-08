@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MizukiSonoko/lnd-gateway/entity"
-	"github.com/MizukiSonoko/lnd-gateway/lightning"
-	"github.com/MizukiSonoko/lnd-gateway/repository"
+	"github.com/MizukiSonoko/LndHub-go/entity"
+	"github.com/MizukiSonoko/LndHub-go/lightning"
+	"github.com/MizukiSonoko/LndHub-go/repository"
 )
 
 var (
@@ -32,29 +32,6 @@ func init() {
 	identityPubkey = info.IdentityPubkey
 }
 
-func auth(w http.ResponseWriter, r *http.Request) {
-	pUserId := r.Form.Get("userId")
-	pPassword := r.Form.Get("password")
-
-	amount, err := strconv.Atoi(pAmount)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(
-			ErrorResp{Message: "amount should be number"})
-		return
-	}
-	if amount < 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(
-			ErrorResp{Message: "amount should be plus"})
-		return
-	}
-
-	token := middleware.GenerateToken(nil)
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(
-		TokenResp{Token: token})
-}
 
 func addInvoice(w http.ResponseWriter, r *http.Request) {
 	ok := service.VerifyRequest(r)
