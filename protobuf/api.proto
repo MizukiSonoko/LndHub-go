@@ -40,6 +40,7 @@ message PayInvoiceReq{
 }
 
 message Btc{
+    string address = 1;
 }
 
 message Transactions {
