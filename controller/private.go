@@ -6,7 +6,10 @@ import (
 	"github.com/MizukiSonoko/LndHub-go/lightning"
 	"github.com/MizukiSonoko/LndHub-go/protobuf"
 	"github.com/MizukiSonoko/LndHub-go/repository"
+	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/golang/protobuf/ptypes/empty"
+
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"math"
@@ -22,6 +25,8 @@ var (
 	repo           repository.UserRepo
 	lnd            lightning.Lnd
 	identityPubkey string
+
+	log = logger.NewLogger()
 )
 
 func init() {
@@ -29,10 +34,10 @@ func init() {
 	// In now, using macOS
 	lnd = lightning.NewLnd(
 		"localhost:10009",
-		os.Getenv("HOME")+"/Library/Application Support/Lnd/tls.cert")
+		os.Getenv("HOME")+"/.lnd/tls.cert")
 	info, err := lnd.GetInfo()
 	if err != nil {
-		panic("")
+		log.Fatal("lnd GetInfo failed", zap.Error(err))
 	}
 	identityPubkey = info.IdentityPubkey
 }
