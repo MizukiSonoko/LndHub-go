@@ -13,7 +13,7 @@ type User struct {
 	id          string
 	balance     uint
 	paymentHash map[string]PaymentHashState
-	tx          Transaction
+	tx          []Transaction
 	invoice     string
 	address     string
 }
@@ -35,7 +35,7 @@ func (u *User) UpdateBalance(n uint) {
 }
 
 func (u *User) AttachTransaction(tx Transaction) {
-	u.tx = tx
+	u.tx = append(u.tx, tx)
 }
 
 func (u *User) AttachUserInvoice(invoice string) {
