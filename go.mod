@@ -1,4 +1,4 @@
-module github.com/MizukiSonoko/lnd-gateway
+module github.com/MizukiSonoko/LndHub-go
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

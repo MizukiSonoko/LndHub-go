@@ -1,6 +1,6 @@
 package repository
 
-import e "github.com/MizukiSonoko/lnd-gateway/entity"
+import e "github.com/MizukiSonoko/LndHub-go/entity"
 
 type UserRepo interface {
 	Get(id string) e.User
