@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"github.com/MizukiSonoko/lnd-gateway/protobuf"
+
 	"github.com/golang/protobuf/ptypes/empty"
 )
 
