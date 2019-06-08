@@ -7,3 +7,5 @@ vendor/
 
 tls.cert
 tls.key
+
+lndhub-go

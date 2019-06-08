@@ -12,12 +12,12 @@ var publicKey *rsa.PublicKey
 
 //ToDo make it injectable using env
 const (
-	PUBLIC_KEY_PATH = "./sample.rsa.pub.pkcs8"
-	userIdClaimKey  = "userId"
+	publicKeyPath  = "./sample.rsa.pub.pkcs8"
+	userIdClaimKey = "userId"
 )
 
 func init() {
-	key, err := ioutil.ReadFile(PUBLIC_KEY_PATH)
+	key, err := ioutil.ReadFile(publicKeyPath)
 	if err != nil {
 		panic(fmt.Sprintf("ReadFile returns err:%s\n", err.Error()))
 	}
