@@ -12,6 +12,12 @@ service LndHubService {
 
 service LndHubPrivateService {
     rpc GetInfo(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc AddInvoice(AddInvoiceReq) returns (google.protobuf.Empty);
+    rpc PayInvoice(PayInvoiceReq) returns (google.protobuf.Empty);
+    rpc GetBtc(google.protobuf.Empty) returns (Btc);
+    rpc GetBalance(google.protobuf.Empty) returns (Balance);
+    rpc GetTxs(google.protobuf.Empty) returns (Transactions);
+    rpc GetUserInvoices(google.protobuf.Empty) returns (Invoices);
 }
 
 message LoginReq {
@@ -21,4 +27,27 @@ message LoginReq {
 
 message LoginRes{
     string token = 1;
+}
+
+message AddInvoiceReq{
+    string memo = 1;
+    uint32 amount = 2;
+}
+
+message PayInvoiceReq{
+    string invoice = 1;
+    uint32 amount = 2;
+}
+
+message Btc{
+}
+
+message Transactions {
+}
+
+message Balance {
+    uint32 balance = 1;
+}
+message Invoices{
+    repeated string invoice = 1;
 }
