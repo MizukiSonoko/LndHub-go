@@ -12,7 +12,7 @@ var publicKey *rsa.PublicKey
 
 //ToDo make it injectable using env
 const (
-	PUBLIC_KEY_PATH = ""
+	PUBLIC_KEY_PATH = "./sample.rsa.pub.pkcs8"
 	userIdClaimKey  = "userId"
 )
 

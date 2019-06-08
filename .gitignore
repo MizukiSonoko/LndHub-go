@@ -1,2 +1,9 @@
 vendor/
 .idea/
+
+*.pkcs8
+*.rsa
+*.pub
+
+tls.cert
+tls.key
