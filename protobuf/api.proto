@@ -1,6 +1,3 @@
-/**
- * Copyright (C) 2018 The Suigetsu Authors, Ltd. All rights reserved.
- */
 syntax = "proto3";
 package api;
 
