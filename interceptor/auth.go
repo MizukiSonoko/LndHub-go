@@ -2,35 +2,14 @@ package interceptor
 
 import (
 	"context"
-	"crypto/rsa"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/MizukiSonoko/LndHub-go/controller"
+	"github.com/MizukiSonoko/LndHub-go/jwt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"io/ioutil"
-	"log"
 )
-
-//ToDo make it injectable using env
-const (
-	PUBLIC_KEY_PATH = ""
-	userIdClaimKey  = "userId"
-)
-
-var publicKey *rsa.PublicKey
-
-func init() {
-	key, err := ioutil.ReadFile(PUBLIC_KEY_PATH)
-	if err != nil {
-		panic(fmt.Sprintf("ReadFile returns err:%s\n", err.Error()))
-	}
-	publicKey, err = jwt.ParseRSAPublicKeyFromPEM(key)
-	if err != nil {
-		panic(fmt.Sprintf("ParseRSAPublicKeyFromPEM returns err:%s\n", err.Error()))
-	}
-}
 
 type ServiceAuthorize interface {
 	Authorize(context.Context, string) error
@@ -71,7 +50,7 @@ func authentication(ctx context.Context) (context.Context, error) {
 		}
 		vs := data["authorization"]
 		if len(vs) == 0 {
-			return "", fmt.Errorf("not found %s in metadata",  "authorization")
+			return "", fmt.Errorf("not found %s in metadata", "authorization")
 		}
 		return vs[0], nil
 	}
@@ -81,37 +60,10 @@ func authentication(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	userId, ok := getUserIdFromToken(token)
+	userId, ok := jwt.GetUserIdFromToken(token)
 	if !ok {
 		return nil, err
 	}
 
-	return context.WithValue(ctx, "userId", userId), nil
-}
-
-func getUserIdFromToken(tokenStr string) (string, bool) {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (i interface{}, e error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected signing method:%v",
-				token.Header["alg"])
-		}
-		return publicKey, nil
-	})
-	if err != nil || !token.Valid {
-		return "", false
-	}
-	claims := token.Claims.(jwt.MapClaims)
-	userId, ok := claims[userIdClaimKey].(string)
-	if !ok {
-		log.Println("request not set userId")
-		return "", false
-	}
-	return userId, true
-}
-
-func GenerateToken(userId string) string {
-	claims := make(jwt.MapClaims)
-	claims[userIdClaimKey] = userId
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	return token.Raw
+	return context.WithValue(ctx, controller.CtxUserIdKey, userId), nil
 }
