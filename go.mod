@@ -1,6 +1,7 @@
 module github.com/MizukiSonoko/LndHub-go
 
 require (
+	github.com/btcsuite/btcd v0.0.0-20190605094302-a0d1e3e36d50
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/protobuf v1.2.0
