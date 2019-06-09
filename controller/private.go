@@ -8,6 +8,7 @@ import (
 	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/MizukiSonoko/LndHub-go/protobuf"
 	"github.com/MizukiSonoko/LndHub-go/repository"
+	decodepay "github.com/fiatjaf/ln-decodepay"
 	"github.com/golang/protobuf/ptypes/empty"
 
 	"go.uber.org/zap"
@@ -55,14 +56,21 @@ func (lndHubPrivateServiceServer) AddInvoice(ctx context.Context, req *api.AddIn
 	memo := req.Memo
 	amount := req.Amount
 
-	// use case
+	// === use case ===
 	user := repo.Get(userId)
 	resp, err := lnd.AddInvoice(memo, uint(amount))
-	user.AttachUserInvoice(resp.PaymentRequest)
+
+	bolt11, err := decodepay.Decodepay(resp.PaymentRequest)
+
+	paymentHash, ok := bolt11["payment_hash"]
+
+	user.AttachPaymentHash(paymentHash)
 	err = repo.Update(user)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	// === ==== ===
+
 	return nil, nil
 }
 
@@ -134,12 +142,27 @@ func (lndHubPrivateServiceServer) PayInvoice(ctx context.Context, req *api.PayIn
 func (lndHubPrivateServiceServer) GetBtc(ctx context.Context, req *empty.Empty) (*api.Btc, error) {
 	userId := ctx.Value(CtxUserIdKey).(string)
 
-	// use case
+	// === use case ===
 	user := repo.Get(userId)
-	address := user.Getaddress()
 
-	// ToDo impl: https://github.com/BlueWallet/LndHub/blob/master//class/User.js#L109
-	// await this._redis.set('bitcoin_address_for_' + this._userid, address);
+	if user.HasBtcAddress() {
+		address := user.GetBtcAddress()
+	} else {
+		// If user dose not have address. generate
+		address, err := lnd.NewAddress()
+		if err != nil {
+			log.Error("lnd NewAddress failed", zap.Error(err))
+		}
+		err = bc.ImportAddress(address)
+		if err != nil {
+			log.Error("btc client ImportAddress failed", zap.Error(err))
+		}
+		user.AttachBtcAddress(address)
+		err = repo.Update(user)
+		if err != nil {
+			log.Error("repo Update failed", zap.Error(err))
+		}
+	}
 
 	return &api.Btc{
 		Address: address,
@@ -149,10 +172,33 @@ func (lndHubPrivateServiceServer) GetBtc(ctx context.Context, req *empty.Empty) 
 func (lndHubPrivateServiceServer) GetBalance(ctx context.Context, req *empty.Empty) (*api.Balance, error) {
 	userId := ctx.Value(CtxUserIdKey).(string)
 
-	// use case
+	// === use case ===
 	user := repo.Get(userId)
+
+	if !user.HasBtcAddress() {
+		// If user dose not have address. generate
+		address, err := lnd.NewAddress()
+		if err != nil {
+			log.Error("lnd NewAddress failed", zap.Error(err))
+		}
+		err = bc.ImportAddress(address)
+		if err != nil {
+			log.Error("btc client ImportAddress failed", zap.Error(err))
+		}
+		user.AttachBtcAddress(address)
+		err = repo.Update(user)
+		if err != nil {
+			log.Error("repo Update failed", zap.Error(err))
+		}
+	}
+	balance := uint32(user.Balance())
+	if balance < 0 {
+		balance = 0
+	}
+	// === ==== ===
+
 	return &api.Balance{
-		Balance: uint32(user.Balance()),
+		Balance: balance,
 	}, nil
 }
 
@@ -163,8 +209,9 @@ func (lndHubPrivateServiceServer) GetTxs(ctx context.Context, req *empty.Empty) 
 func (lndHubPrivateServiceServer) GetUserInvoices(ctx context.Context, req *empty.Empty) (*api.Invoices, error) {
 	userId := ctx.Value(CtxUserIdKey).(string)
 
-	// use case
+	// === use case ===
 	user := repo.Get(userId)
+	// === ==== ===
 	return &api.Invoices{
 		Invoice: []string{user.Invoice()},
 	}, nil
