@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"github.com/MizukiSonoko/LndHub-go/bitcoin"
 	"github.com/MizukiSonoko/LndHub-go/entity"
 	"github.com/MizukiSonoko/LndHub-go/lightning"
 	"github.com/MizukiSonoko/LndHub-go/logger"
@@ -24,6 +25,7 @@ const (
 var (
 	repo           repository.UserRepo
 	lnd            lightning.Lnd
+	bc             bitcoin.BitcoinClient
 	identityPubkey string
 
 	log = logger.NewLogger()
@@ -135,6 +137,10 @@ func (lndHubPrivateServiceServer) GetBtc(ctx context.Context, req *empty.Empty) 
 	// use case
 	user := repo.Get(userId)
 	address := user.Getaddress()
+
+	// ToDo impl: https://github.com/BlueWallet/LndHub/blob/master//class/User.js#L109
+	// await this._redis.set('bitcoin_address_for_' + this._userid, address);
+
 	return &api.Btc{
 		Address: address,
 	}, nil
