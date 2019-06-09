@@ -35,6 +35,7 @@ type SendResponse struct {
 
 type Lnd interface {
 	GetInfo() (IndInfo, error)
+	NewAddress() (string, error)
 	AddInvoice(memo string, amt uint) (AddInvoiceResp, error)
 	DecodePay(invoice string) (DecodePayResp, error)
 	ConnectPeer(publicKey, host string) error
@@ -61,6 +62,17 @@ func (c *SendPaymentClient) Send(req SendRequest) error {
 type lndClient struct {
 	client lnrpc.LightningClient
 	c      context.Context
+}
+
+func (l *lndClient) NewAddress() (string, error) {
+	res, err := l.client.NewAddress(l.c, &lnrpc.NewAddressRequest{
+		// Ref: https://github.com/BlueWallet/LndHub/blob/master//class/User.js#L107
+		Type: lnrpc.AddressType_WITNESS_PUBKEY_HASH,
+	})
+	if err != nil {
+		return "", fmt.Errorf("NewAddress failed err:%s", err)
+	}
+	return res.Address, nil
 }
 
 func (l *lndClient) GetInfo() (IndInfo, error) {
