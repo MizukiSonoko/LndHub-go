@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/MizukiSonoko/LndHub-go/entity"
 	"github.com/MizukiSonoko/LndHub-go/lightning"
+	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/MizukiSonoko/LndHub-go/protobuf"
 	"github.com/MizukiSonoko/LndHub-go/repository"
-	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/golang/protobuf/ptypes/empty"
 
 	"go.uber.org/zap"
@@ -38,6 +38,10 @@ func init() {
 	info, err := lnd.GetInfo()
 	if err != nil {
 		log.Fatal("lnd GetInfo failed", zap.Error(err))
+	} else {
+		log.Info("lnd runninng ",
+			zap.String("publicKey", info.IdentityPubkey),
+			zap.String("addess", info.IdentityAddress))
 	}
 	identityPubkey = info.IdentityPubkey
 }
@@ -57,7 +61,6 @@ func (lndHubPrivateServiceServer) AddInvoice(ctx context.Context, req *api.AddIn
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
 	return nil, nil
 }
 
