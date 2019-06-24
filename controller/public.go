@@ -5,6 +5,7 @@ import (
 	"github.com/MizukiSonoko/LndHub-go/jwt"
 	"github.com/MizukiSonoko/LndHub-go/protobuf"
 	"github.com/golang/protobuf/ptypes/empty"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -23,12 +24,11 @@ func (*lndHubServiceServer) Login(ctx context.Context, req *api.LoginReq) (*api.
 	userId := req.UserId
 	rawPassword := req.Password
 
-	//
 	if userId != "mizuki" || rawPassword != "pasuwaad0" {
 		return nil, status.Error(codes.Unauthenticated, "invalid")
 	}
 	token := jwt.GenerateToken(userId)
-
+	log.Info("token", zap.String("token", token))
 	return &api.LoginRes{
 		Token: token,
 	}, nil

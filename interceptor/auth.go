@@ -3,6 +3,7 @@ package interceptor
 import (
 	"context"
 	"fmt"
+
 	"github.com/MizukiSonoko/LndHub-go/controller"
 	"github.com/MizukiSonoko/LndHub-go/jwt"
 	"google.golang.org/grpc"
@@ -18,11 +19,16 @@ type ServiceAuthorize interface {
 func UnaryAuthenticateInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context,
 		req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		newCtx, err := authentication(ctx)
-		if err != nil {
-			return nil, status.Error(codes.Unauthenticated, err.Error())
+		switch info.FullMethod {
+		case "/api.LndHubService/Login":
+			return handler(ctx, req)
+		default:
+			newCtx, err := authentication(ctx)
+			if err != nil {
+				return nil, status.Error(codes.Unauthenticated, err.Error())
+			}
+			return handler(newCtx, req)
 		}
-		return handler(newCtx, req)
 	}
 }
 
@@ -62,8 +68,10 @@ func authentication(ctx context.Context) (context.Context, error) {
 
 	userId, ok := jwt.GetUserIdFromToken(token)
 	if !ok {
-		return nil, err
+		return nil, fmt.Errorf("GetUserIdFromToken not ok")
 	}
 
-	return context.WithValue(ctx, controller.CtxUserIdKey, userId), nil
+	c := context.WithValue(ctx, controller.CtxUserIdKey, userId)
+	fmt.Printf("res c:%v\n", c)
+	return c, nil
 }

@@ -3,27 +3,44 @@ package jwt
 import (
 	"crypto/rsa"
 	"fmt"
+	"github.com/MizukiSonoko/LndHub-go/logger"
 	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
-	"log"
 )
 
-var publicKey *rsa.PublicKey
+var (
+	log        = logger.NewLogger()
+	publicKey  *rsa.PublicKey
+	privateKey *rsa.PrivateKey
+)
 
 //ToDo make it injectable using env
 const (
-	publicKeyPath  = "./sample.rsa.pub.pkcs8"
+	publicKeyPath  = "./public.key"
+	privateKeyPath = "./secret.key"
 	userIdClaimKey = "userId"
 )
 
 func init() {
-	key, err := ioutil.ReadFile(publicKeyPath)
-	if err != nil {
-		panic(fmt.Sprintf("ReadFile returns err:%s\n", err.Error()))
+	{
+		key, err := ioutil.ReadFile(publicKeyPath)
+		if err != nil {
+			panic(fmt.Sprintf("ReadFile returns err:%s\n", err.Error()))
+		}
+		publicKey, err = jwt.ParseRSAPublicKeyFromPEM(key)
+		if err != nil {
+			panic(fmt.Sprintf("ParseRSAPublicKeyFromPEM returns err:%s\n", err.Error()))
+		}
 	}
-	publicKey, err = jwt.ParseRSAPublicKeyFromPEM(key)
-	if err != nil {
-		panic(fmt.Sprintf("ParseRSAPublicKeyFromPEM returns err:%s\n", err.Error()))
+	{
+		key, err := ioutil.ReadFile(privateKeyPath)
+		if err != nil {
+			panic(fmt.Sprintf("ReadFile returns err:%s\n", err.Error()))
+		}
+		privateKey, err = jwt.ParseRSAPrivateKeyFromPEM(key)
+		if err != nil {
+			panic(fmt.Sprintf("ParseRSAPrivateKeyFromPEM returns err:%s\n", err.Error()))
+		}
 	}
 }
 
@@ -36,12 +53,13 @@ func GetUserIdFromToken(tokenStr string) (string, bool) {
 		return publicKey, nil
 	})
 	if err != nil || !token.Valid {
+		log.Error("token is invalid")
 		return "", false
 	}
 	claims := token.Claims.(jwt.MapClaims)
 	userId, ok := claims[userIdClaimKey].(string)
 	if !ok {
-		log.Println("request not set userId")
+		log.Error("request not set userId")
 		return "", false
 	}
 	return userId, true
@@ -51,5 +69,7 @@ func GenerateToken(userId string) string {
 	claims := make(jwt.MapClaims)
 	claims[userIdClaimKey] = userId
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	return token.Raw
+	tokenString, err := token.SignedString(privateKey)
+	fmt.Printf("tokenString:%s, err:%s\n", tokenString, err)
+	return tokenString
 }

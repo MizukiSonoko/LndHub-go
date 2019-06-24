@@ -22,28 +22,20 @@ func (u User) Id() string {
 	return u.id
 }
 
-func (u *User) Getaddress() string {
+func (u user) HasBtcAddress() bool {
+	return u.address != ""
+}
+
+func (u *User) GetBtcAddress() string {
 	return u.address
+}
+
+func (u *User) AttachBtcAddress(addr string) {
+	u.address = addr
 }
 
 func (u User) Balance() uint {
 	return u.balance
-}
-
-func (u *User) UpdateBalance(n uint) {
-	u.balance = n
-}
-
-func (u *User) AttachTransaction(tx Transaction) {
-	u.tx = append(u.tx, tx)
-}
-
-func (u *User) AttachUserInvoice(invoice string) {
-	u.invoice = invoice
-}
-
-func (u *User) UnlockFounds(invoice string) {
-
 }
 
 func (u *User) Invoice() string {
@@ -60,6 +52,10 @@ func (u *User) GetPaymentHashState(hash string) PaymentHashState {
 		return PAYMENT_HASH_STATE_UNSPECIFIED
 	}
 	return st
+}
+
+func (u *User) AttachPaymentHash(hash string) {
+
 }
 
 func (u *User) UpdatePaymentHashState(hash string, st PaymentHashState) {
