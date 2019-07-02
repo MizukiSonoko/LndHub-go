@@ -25,6 +25,10 @@ type userRepo struct {
 	db *leveldb.DB
 }
 
+func (repo *userRepo) Get(id string) e.User {
+	panic("implement me")
+}
+
 func (repo *userRepo) GetBitcoinAddress(id string) (string, error) {
 	address, err := repo.db.Get([]byte("bitcoin_address_for_"+id), nil)
 	if err != nil {
