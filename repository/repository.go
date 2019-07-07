@@ -34,7 +34,7 @@ func (repo *userRepo) GetBitcoinAddress(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return address, nil
+	return string(address), nil
 }
 
 func (repo *userRepo) SetBitcoinAddress(id, address string) error {

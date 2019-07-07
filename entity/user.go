@@ -22,7 +22,7 @@ func (u User) Id() string {
 	return u.id
 }
 
-func (u user) HasBtcAddress() bool {
+func (u User) HasBtcAddress() bool {
 	return u.address != ""
 }
 
