@@ -61,8 +61,14 @@ func (lndHubPrivateServiceServer) AddInvoice(ctx context.Context, req *api.AddIn
 	resp, err := lnd.AddInvoice(memo, uint(amount))
 
 	bolt11, err := decodepay.Decodepay(resp.PaymentRequest)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-	paymentHash, ok := bolt11["payment_hash"]
+	paymentHash := bolt11.PaymentHash
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
 	user.AttachPaymentHash(paymentHash)
 	err = repo.Update(user)
@@ -141,12 +147,13 @@ func (lndHubPrivateServiceServer) PayInvoice(ctx context.Context, req *api.PayIn
 
 func (lndHubPrivateServiceServer) GetBtc(ctx context.Context, req *empty.Empty) (*api.Btc, error) {
 	userId := ctx.Value(CtxUserIdKey).(string)
+	var address string
 
 	// === use case ===
 	user := repo.Get(userId)
 
 	if user.HasBtcAddress() {
-		address := user.GetBtcAddress()
+		address = user.GetBtcAddress()
 	} else {
 		// If user dose not have address. generate
 		address, err := lnd.NewAddress()

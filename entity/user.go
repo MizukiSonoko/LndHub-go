@@ -46,6 +46,10 @@ func (u *User) Txs() []Transaction {
 	return u.tx
 }
 
+func (u *User) UpdateBalance(n uint){
+	u.balance = n
+}
+
 func (u *User) GetPaymentHashState(hash string) PaymentHashState {
 	st, ok := u.paymentHash[hash]
 	if !ok {
@@ -54,8 +58,16 @@ func (u *User) GetPaymentHashState(hash string) PaymentHashState {
 	return st
 }
 
-func (u *User) AttachPaymentHash(hash string) {
+func (u *User) AttachTransaction(tx Transaction){
+	panic("nont implements")
+}
 
+func (u *User) AttachPaymentHash(hash string) {
+	panic("not implements")
+}
+
+func (u *User) UnlockFounds(invoice string){
+	panic("not implements")
 }
 
 func (u *User) UpdatePaymentHashState(hash string, st PaymentHashState) {
